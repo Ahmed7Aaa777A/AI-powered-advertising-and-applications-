@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="أسئلة دينية">
+<meta name="theme-color" content="#ffffff">
+<title>أسئلة دينية — للأطفال</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23111'/%3E%3Ctext x='32' y='42' font-size='28' text-anchor='middle' fill='%23fff' font-family='sans-serif'%3E%E2%98%85%3C/text%3E%3C/svg%3E">
+<style>
+:root { --ease: cubic-bezier(.2,.8,.3,1); }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; font-family: system-ui, "Segoe UI", Tahoma, sans-serif; background: #f7f7f5; color: #1a1a1a; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+#game { width: 100%; max-width: 560px; padding: 20px 16px; }
+#game button { font: inherit; cursor: pointer; touch-action: manipulation; }
+.opt { display: block; width: 100%; text-align: right; padding: 14px 16px; border-radius: 12px; border: 1.5px solid #e0e0de; background: #ffffff; color: #1a1a1a; font-size: 17px; margin-bottom: 8px; transition: all .18s var(--ease); }
+.opt:hover:not(:disabled) { border-color: #1a1a1a; }
+.opt:disabled { cursor: default; }
+.opt.correct { border-color: #2e7d32; background: #eaf5ea; color: #1b5e20; }
+.opt.wrong { border-color: #c62828; background: #fceaea; color: #8e1c1c; }
+.btn { padding: 14px 36px; border-radius: 12px; border: none; background: #1a1a1a; color: #ffffff; font-size: 17px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: opacity .18s var(--ease); }
+.btn:active { opacity: .8; }
+.btn.secondary { background: #ffffff; color: #1a1a1a; border: 1.5px solid #d6d6d4; }
+@media (prefers-color-scheme: dark) {
+  body { background: #161616; color: #f2f2f2; }
+  .opt { background: #1f1f1f; border-color: #3a3a3a; color: #f2f2f2; }
+  .btn { background: #f2f2f2; color: #161616; }
+  .btn.secondary { background: #1f1f1f; color: #f2f2f2; border-color: #3a3a3a; }
+}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<script>
+const levels = [
+  { name: "المستوى الأول", tag: "سهل جدًا", qs: [
+    { q: "كم عدد الصلوات المفروضة في اليوم والليلة؟", opts: ["ثلاث صلوات","خمس صلوات","سبع صلوات","أربع صلوات"], a: 1, why: "فرض الله خمس صلوات على المسلمين." },
+    { q: "ما هي أول سورة في القرآن الكريم؟", opts: ["سورة الناس","سورة الإخلاص","سورة الفاتحة","سورة البقرة"], a: 2, why: "سورة الفاتحة هي أول سور القرآن ونقرؤها في كل ركعة." },
+    { q: "من هو النبي الذي بُنيت عليه السفينة؟", opts: ["نوح عليه السلام","إبراهيم عليه السلام","موسى عليه السلام","يوسف عليه السلام"], a: 0, why: "أمر الله نوحًا عليه السلام ببناء السفينة." },
+    { q: "ماذا نقول قبل أن نبدأ بأي عمل؟", opts: ["الحمد لله","بسم الله الرحمن الرحيم","سبحان الله","لا إله إلا الله"], a: 1, why: "نستفتح أعمالنا بالبسملة." },
+    { q: "إلى أين يتجه المسلمون عند الصلاة؟", opts: ["إلى الشمس","إلى الكعبة","إلى القمر","إلى الشمال"], a: 1, why: "يقف المسلمون في صلاتهم موجهين وجوههم إلى الكعبة المشرفة." }
+  ]},
+  { name: "المستوى الثاني", tag: "متوسط", qs: [
+    { q: "كم كان عمر النبي ﷺ عندما نزل عليه الوحي؟", opts: ["25 سنة","40 سنة","50 سنة","63 سنة"], a: 1, why: "نزل الوحي على النبي ﷺ وعمره أربعون سنة." },
+    { q: "ما اسم أول معركة كبرى في الإسلام؟", opts: ["أُحد","الخندق","بدر","حُنين"], a: 2, why: "وقعت غزوة بدر الكبرى في السنة الثانية للهجرة." },
+    { q: "كم لبث أهل الكهف نائمين؟", opts: ["100 سنة","300 سنة","309 سنوات","1000 سنة"], a: 2, why: "لبثوا في كهفهم 309 سنين كما ذُكر في سورة الكهف." },
+    { q: "من هو النبي الذي أُلقيه في النار فكانت بردًا وسلامًا؟", opts: ["يوسف عليه السلام","إبراهيم عليه السلام","عيسى عليه السلام","يونس عليه السلام"], a: 1, why: "نجّى الله إبراهيم عليه السلام من نمرود وجنوده." },
+    { q: "ما هي أطول سورة في القرآن الكريم؟", opts: ["آل عمران","النساء","الطور","البقرة"], a: 3, why: "سورة البقرة هي أطول سورة في القرآن." }
+  ]},
+  { name: "المستوى الثالث", tag: "صعب", qs: [
+    { q: "من الصحابي الذي لُقّب بأمين الأمة؟", opts: ["أبو بكر الصديق","عثمان بن عفان","عمر بن الخطاب","علي بن أبي طالب"], a: 1, why: "لُقّب عثمان رضي الله عنه بذلك لأمانته وحيائه." },
+    { q: "بماذا لُقّب عثمان بن عفان رضي الله عنه؟", opts: ["الفاروق","ذو النورين","سيف الله","أسد الله"], a: 1, why: "لُقّب عثمان بذي النورين لزواجه من ابنتين للنبي ﷺ: رقية ثم أم كلثوم." },
+    { q: "كم عدد الأنبياء المذكورين في القرآن الكريم؟", opts: ["15 نبيًا","20 نبيًا","25 نبيًا","40 نبيًا"], a: 2, why: "ذُكر في القرآن 25 نبيًا." },
+    { q: "في أي سنة هجرية وقعت غزوة أُحد؟", opts: ["السنة الأولى","السنة الثانية","السنة الثالثة","السنة الرابعة"], a: 2, why: "وقعت غزوة أُحد في السنة الثالثة للهجرة." },
+    { q: "ما اسم الغار الذي نزل فيه أول الوحي؟", opts: ["غار حراء","غار ثور","غار الكهف","غار أُحد"], a: 0, why: "نزل الوحي أول مرة في غار حراء." },
+    { q: "من هو الصحابي الذي لُقّب بأمين الأمة؟", opts: ["طلحة بن عبيد الله","الزبير بن العوام","أبو عبيدة بن الجراح","سعد بن أبي وقاص"], a: 2, why: "أبو عبيدة بن الجراح رضي الله عنه هو أمين الأمة، وكان قائد جيش المسلمين يوم فتح بيت المقدس." }
+  ]}
+];
+
+let level = 0, qIndex = 0, score = 0, streak = 0, answered = false;
+let best = 0;
+try { best = parseInt(localStorage.getItem("islamicQuizBest")) || 0; } catch (e) {}
+
+const screen = document.getElementById("game");
+
+function header() {
+  const lv = levels[level];
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+    <span style="font-size:13px;color:#777;">${lv.name} · ${lv.tag}</span>
+    <span style="font-size:13px;color:#555;">النقاط: <b style="color:#1a1a1a;">${score}</b></span>
+  </div>
+  <div style="height:5px;border-radius:3px;background:#e5e5e3;overflow:hidden;margin-bottom:20px;">
+    <div style="height:100%;width:${(qIndex / lv.qs.length) * 100}%;background:#1a1a1a;transition:width .25s var(--ease);"></div>
+  </div>`;
+}
+
+function start() {
+  level = 0; qIndex = 0; score = 0; streak = 0;
+  screen.innerHTML = `
+  <div style="text-align:center;padding:32px 8px;">
+    <div style="font-size:44px;line-height:1;margin-bottom:12px;">☾</div>
+    <div style="font-size:24px;font-weight:700;margin-bottom:10px;color:#145a32;">أسئلة دينية</div>
+    <div style="font-size:15px;color:#666;margin-bottom:10px;line-height:1.9;">ثلاثة مستويات تتصاعد صعوبتها مع الاختيارات المتعددة<br>كل إجابة صحيحة = 10 نقاط، وسلسلة الإجابات تمنحك مكافأة!</div>
+    ${best ? `<div style="font-size:13px;color:#888;margin-bottom:24px;">أفضل نتيجة لك حتى الآن: <b>${best}</b> نقطة</div>` : `<div style="margin-bottom:24px;"></div>`}
+    <button class="btn" onclick="renderQ()">▶ ابدأ الآن</button>
+  </div>`;
+}
+
+function renderQ() {
+  answered = false;
+  const lv = levels[level];
+  if (qIndex >= lv.qs.length) return levelEnd();
+  const item = lv.qs[qIndex];
+  screen.innerHTML = header() + `
+  <div style="font-size:13px;color:#999;margin-bottom:8px;">السؤال ${qIndex + 1} من ${lv.qs.length}</div>
+  <div style="font-size:19px;font-weight:600;line-height:1.8;margin-bottom:20px;">${item.q}</div>
+  ${item.opts.map((o, i) => `<button class="opt" id="opt${i}" onclick="pick(${i})">${o}</button>`).join("")}
+  <div id="feedback" style="display:none;font-size:15px;line-height:1.9;padding:14px 16px;border-radius:12px;margin-top:8px;"></div>
+  <div id="nextWrap" style="display:none;margin-top:16px;"><button class="btn" onclick="next()">التالي ←</button></div>`;
+}
+
+function pick(i) {
+  if (answered) return;
+  answered = true;
+  const item = levels[level].qs[qIndex];
+  const opts = screen.querySelectorAll(".opt");
+  opts.forEach(b => b.disabled = true);
+  opts[item.a].classList.add("correct");
+  const fb = document.getElementById("feedback");
+  if (i === item.a) {
+    streak++;
+    const bonus = streak >= 3 ? 5 : 0;
+    score += 10 + bonus;
+    fb.style.display = "block";
+    fb.style.background = "#eaf5ea";
+    fb.style.color = "#1b5e20";
+    fb.innerHTML = `<b>أحسنت!</b> ${item.why}${bonus ? `<br><span style="font-size:13px;opacity:.75;">سلسلة ×${streak} — مكافأة +5 نقاط</span>` : ""}`;
+  } else {
+    streak = 0;
+    document.getElementById("opt" + i).classList.add("wrong");
+    fb.style.display = "block";
+    fb.style.background = "#fceaea";
+    fb.style.color = "#8e1c1c";
+    fb.innerHTML = `<b>الإجابة الصحيحة موضّحة بالأخضر.</b><br>${item.why}`;
+  }
+  document.getElementById("nextWrap").style.display = "block";
+}
+
+function next() { qIndex++; renderQ(); }
+
+function levelEnd() {
+  const last = level === levels.length - 1;
+  if (last) { try { localStorage.setItem("islamicQuizBest", Math.max(best, score)); } catch (e) {} }
+  screen.innerHTML = `
+  <div style="text-align:center;padding:32px 8px;">
+    <div style="font-size:44px;margin-bottom:8px;">${last ? "🏆" : "⭐"}</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:8px;">${last ? "أنهيت جميع الأسئلة!" : "أكملت " + levels[level].name + "!"}</div>
+    <div style="font-size:40px;font-weight:700;margin:16px 0;">${score} نقطة</div>
+    ${last ? endMsg() : ""}
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+      ${last ? "" : `<button class="btn" onclick="level++; qIndex = 0; renderQ();">المستوى التالي</button>`}
+      <button class="btn secondary" onclick="start()">إعادة من البداية</button>
+    </div>
+  </div>`;
+}
+
+function endMsg() {
+  let msg;
+  if (score >= 140) msg = "ممتاز! أنت بطل حقيقي في المعرفة الإسلامية";
+  else if (score >= 110) msg = "رائع جدًا! معلوماتك قوية";
+  else if (score >= 80) msg = "جيد! تدرّب أكثر لتصبح بطلًا";
+  else msg = "لا بأس! المحاولة تعلّمنا، جرّب مرة أخرى";
+  return `<div style="font-size:15px;color:#666;margin-bottom:8px;">${msg}</div>`;
+}
+
+start();
+</script>
+</body>
+</html>
